@@ -24,7 +24,7 @@ This repository includes the Python code for my Stream Application Scheduling ap
 
 ## How to Download Your Program
 
-- Download the zipped file located in the repository on my GitHub account. [Link: .....]
+- Download the zipped file "projet_these_Saber_github.7z" located in the repository on my GitHub account. [Link: .....]
 
 ## How to Run the Program
 
