@@ -29,18 +29,20 @@ This repository includes the Python code for my Stream Application Scheduling ap
 ## How to Run the Program
 
 1. Decompress the folder containing all programs and files.
-2. Open the Python file: `GSA_Mealpy_githubversion.py`.
+2. To run GSA algorithm, Open the Python file: `GSA_Mealpy_gitHubVersion.py` in python IDE, and then run it
+3. To run GA algorithm, Open the Python file: `GA_Mealpy_gitHubVersion.py` in python IDE, and then run it
 
-### Calculating the Fitness of Each Type of DAG
+### To run GSA and GA algorithm
 
 1. Import the appropriate dataset.
-   Example: `import readClusteredDAGfile300`
-2. Initialize the list of clustered DAGs.
-   Example: `DAG_List_clustred = readClusteredDAGfile300.DAG_List_clustred`
-3. Update the population variable.
-   Example: `problem_size = 300  # Dimension: number of tasks`
+   Example: To process DAG with size=50, import its dataset like this :   `import readClusteredDAGfile50`
+   and the same for all DAGs starting from 50 to 700.   
+3. Initialize the list of clustered DAGs.
+   Example: `DAG_List_clustred = readClusteredDAGfile50.DAG_List_clustred`
+4. Update the population variable.
+   Example: `problem_size = 50  # Dimension: number of tasks`
 
 ## Output and Results
 
-After running the program, the results are saved in an Excel file named `results.xls`.
+After running the program, the results are saved in an Excel files named `GSA_results.xls` and GA_results.xls.
 
