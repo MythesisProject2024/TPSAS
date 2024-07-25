@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository includes the Python code for my Stream Application Scheduling approach.
+This repository includes the Python code for our Stream Application Scheduling approach.
 
 ## Getting Started
 
