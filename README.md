@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository includes the Python code of the exprementation of our paper submitted in a conference and under reviewing.
+This repository contains the Python code for experimentation of the proposed TPSAS approach of our paper, which has been submitted to a conference and is currently under review.
 
 ## Getting Started
 
