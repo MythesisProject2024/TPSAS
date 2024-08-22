@@ -27,7 +27,7 @@ In the currect version of Mealpy library, GSA algorithm is not included, we need
 - add GSA.py to the folder "...\mealpy\swarm_based\".
 - add this line "from .GSA import GSA" in  "...\mealpy\swarm_based\_init_.py"
 - Import GSA.py in any python script: from mealpy.swarm_based.GSA  import GSA
-- Import GA.py in any python script: from mealpy import FloatVar, GA
+- Import GA.py in any python script: from mealpy import GA
   
 ### How to Run the Program
 1. Decompress the folder containing all programs and files.
