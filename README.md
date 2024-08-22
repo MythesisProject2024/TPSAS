@@ -22,10 +22,6 @@ This repository contains the Python code for experimentation of the proposed TPS
 - Install only the required Python libraries.
   Example: mealpy - An open-source library for the latest meta-heuristic algorithms in Python.
 
-## How to Download Your Program
-
-- Download the zipped file "projet_these_Saber_github.7z" located in the repository on my GitHub account. [URL:  https://github.com/SabeurLajili/Thesis_Project_Code]
-
 ## How to Run the Program
 
 1. Decompress the folder containing all programs and files.
