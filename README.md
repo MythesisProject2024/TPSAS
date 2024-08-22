@@ -4,30 +4,29 @@
 This repository contains the Python code for experimentation of the proposed TPSAS approach of our paper, which has been submitted to a conference and is currently under review.
 
 ## Getting Started
-This python project includes python scripts, task dataset and VM data set. 
-The scripts code includes four main programs:  
-GA_Mealpy_gitHubVersion.py, GSA_Mealpy_gitHubVersion.py, GSAP_Mealpy_gitHubVersion.py, random_scheduling.py
-Datasets are: task_dataset2.csv , cloud200_edge100_vms_SameConfiguration.csv
-
-### Dependencies
-- You need to download a new version of a Python IDE or Pyzo IDE.
-- Required libraries: pandas, networkx, mealpy, etc.
-- Use the command `pip` to install any necessary library from the internet. 
-  Example: `pip install mealpy`
+- This python project includes python scripts, task dataset and VM dataset. 
+- The scripts code includes four main programs:  GA_Mealpy_gitHubVersion.py, GSA_Mealpy_gitHubVersion.py, GSAP_Mealpy_gitHubVersion.py, random_scheduling.py
+- Datasets are: task_dataset2.csv , cloud200_edge100_vms_SameConfiguration.csv
 
 ### OS Version
 - Example: Windows 10
 
 ### Installing
-- Install only the required Python libraries.
-  Example: mealpy - An open-source library for the latest meta-heuristic algorithms in Python.
+Download the required Python libraries and components:
+
+- A recent version of a Python IDE or Pyzo IDE.
+- Mealpy: an open-source library for the latest meta-heuristic algorithms in Python.
+- Other required libraries: pandas, networkx, numpy, etc.
+- Use the pip command to install any necessary libraries from the internet.
+  Example: pip install mealpy
 
 ### Configuration of Mealpy: adding of GSA algorithm
-In the currect version of Mealpy library, GSA algorithm is not included, we need to addit as following:
-- add GSA.py to the folder "...\mealpy\swarm_based\".
-- add this line "from .GSA import GSA" in  "...\mealpy\swarm_based\_init_.py"
-- Import GSA.py in any python script: from mealpy.swarm_based.GSA  import GSA
-- Import GA.py in any python script: from mealpy import GA
+In the current version of the Mealpy library, the GSA algorithm is not included. We need to add it as follows:
+
+- Copy the Python file "scripts/GSA.py" into your local folder at "...\mealpy\swarm_based\".
+- Add the line "from .GSA import GSA" to ...\mealpy\swarm_based\__init__.py.
+- Import GSA.py in any Python script using: from mealpy.swarm_based.GSA import GSA.
+- Import GA.py in any Python script using: from mealpy import GA.
   
 ### How to Run the Program
 1. Decompress the folder containing all programs and files.
