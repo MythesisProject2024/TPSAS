@@ -8,13 +8,8 @@ This repository contains the Python code for experimentation of the proposed TPS
 - The scripts code includes four main programs:  GA_Mealpy_gitHubVersion.py, GSA_Mealpy_gitHubVersion.py, GSAP_Mealpy_gitHubVersion.py, random_scheduling.py
 - Datasets are: task_dataset2.csv , cloud200_edge100_vms_SameConfiguration.csv
 
-### OS Version
-- Example: Windows 10
-
 ### Installing
 Download the required Python libraries and components:
-
-- A recent version of a Python IDE or Pyzo IDE.
 - Mealpy: an open-source library for the latest meta-heuristic algorithms in Python.
 - Other required libraries: pandas, networkx, numpy, etc.
 - Use the pip command to install any necessary libraries from the internet.
