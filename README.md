@@ -19,14 +19,6 @@ Download the required Python libraries and components:
 - Other required libraries: pandas, networkx, numpy, etc.
 - Use the pip command to install any necessary libraries from the internet.
   Example: pip install mealpy
-
-### Configuration of Mealpy: adding of GSA algorithm
-In the current version of the Mealpy library, the GSA algorithm is not included. We need to add it as follows:
-
-- Copy the Python file "scripts/GSA.py" into your local folder at "...\mealpy\swarm_based\".
-- Add the line "from .GSA import GSA" to ...\mealpy\swarm_based\__init__.py.
-- Import GSA.py in any Python script using: from mealpy.swarm_based.GSA import GSA.
-- Import GA.py in any Python script using: from mealpy import GA.
   
 ### How to Run the Program
 1. Decompress the folder containing all programs and files.
