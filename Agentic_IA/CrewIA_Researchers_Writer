@@ -1,0 +1,271 @@
+import os
+import json
+import re
+import requests
+import xml.etree.ElementTree as ET
+from crewai.llm import LLM
+from crewai import Agent
+
+# -------------------------
+# CONFIG
+# -------------------------
+llm = LLM(model="groq/llama-3.1-8b-instant")  # replace with your provider/model
+
+MAX_NEGOTIATION_ROUNDS = 10
+ARXIV_FETCH_MAX_RESULTS = 5
+MIN_ACCEPT_YEAR_DEFAULT = 2024
+
+# -------------------------
+# DATA CLASS
+# -------------------------
+class ResearchPaper:
+    def __init__(self, title: str, keywords: str, abstract: str, year: str, source_id: str = None):
+        self.title = title
+        self.keywords = keywords
+        self.abstract = abstract
+        self.year = year
+        self.source_id = source_id
+
+    def __str__(self):
+        return f"{self.title} ({self.year})\nKeywords: {self.keywords}\nAbstract: {self.abstract}\n"
+
+# -------------------------
+# RESEARCHER AGENT
+# -------------------------
+class ResearcherAgent:
+    def __init__(self, name: str, topic: str, llm: LLM, min_year: int = 2017):
+        self.name = name
+        self.topic = topic
+        self.llm = llm
+        self.min_year = min_year
+        self.seen_ids = set()
+        self.papers = []
+        self.agent = Agent(
+            role="Researcher",
+            goal=f"Find relevant academic papers about {topic}.",
+            backstory=f"{name} — academic researcher specialized in {topic}.",
+            llm=llm,
+        )
+
+    def fetch_arxiv_candidates(self, start: int = 0, max_results: int = ARXIV_FETCH_MAX_RESULTS):
+        q = self.topic.replace(" ", "+")
+        url = f"http://export.arxiv.org/api/query?search_query=all:{q}&start={start}&max_results={max_results}"
+        try:
+            r = requests.get(url, timeout=15)
+            r.raise_for_status()
+            root = ET.fromstring(r.text)
+            entries = root.findall("{http://www.w3.org/2005/Atom}entry")
+            candidates = []
+            for e in entries:
+                eid = e.find("{http://www.w3.org/2005/Atom}id")
+                title_el = e.find("{http://www.w3.org/2005/Atom}title")
+                summary_el = e.find("{http://www.w3.org/2005/Atom}summary")
+                pub_el = e.find("{http://www.w3.org/2005/Atom}published")
+                if title_el is None or summary_el is None or pub_el is None:
+                    continue
+                title = title_el.text.strip()
+                abstract = (summary_el.text or "").strip()
+                year = (pub_el.text or "")[:4]
+                cats = [c.attrib.get("term", "") for c in e.findall("{http://www.w3.org/2005/Atom}category")]
+                candidates.append({
+                    "id": eid.text.strip() if eid is not None else None,
+                    "title": title,
+                    "abstract": abstract,
+                    "year": year,
+                    "categories": cats
+                })
+            return candidates
+        except Exception as e:
+            print(f"[ARXIV ERROR] {self.name}: {e}")
+            return []
+
+    def provide_paper(self) -> ResearchPaper:
+        start, tried, batch_size = 0, 0, ARXIV_FETCH_MAX_RESULTS
+        while tried < 50:
+            candidates = self.fetch_arxiv_candidates(start=start, max_results=batch_size)
+            if not candidates:
+                break
+            for c in candidates:
+                if c["id"] in self.seen_ids:
+                    continue
+                try:
+                    year_int = int(c["year"])
+                except:
+                    year_int = 0
+                self.seen_ids.add(c["id"])
+                if year_int < self.min_year:
+                    continue
+                paper = ResearchPaper(
+                    title=c["title"],
+                    keywords=", ".join(c.get("categories", [])),
+                    abstract=c["abstract"],
+                    year=str(c["year"]),
+                    source_id=c.get("id")
+                )
+                self.papers.append(paper)
+                return paper
+            start += batch_size
+            tried += batch_size
+        # fallback if nothing found
+        fallback = ResearchPaper(
+            title=f"Fallback {self.topic} Paper",
+            keywords="general keywords",
+            abstract="Abstract not available.",
+            year=str(MIN_ACCEPT_YEAR_DEFAULT)
+        )
+        self.papers.append(fallback)
+        return fallback
+
+    def receive_feedback(self, intent: dict):
+        """Researcher updates constraints based on structured feedback"""
+        msg = intent.get("message", "")
+        prompt = (
+            f"The writer gave this message: '{msg}'.\n"
+            f"Current min_year: {self.min_year}, topic: {self.topic}.\n"
+            "Return JSON: {\"new_min_year\": int or null, \"topic_update\": string or null}"
+        )
+        try:
+            resp = self.llm.call(prompt)
+            j = json.loads(resp.strip().split("```")[-1]) if "{" in resp else {}
+
+            if j.get("new_min_year"):
+                self.min_year = max(self.min_year, int(j["new_min_year"]))
+            if j.get("topic_update"):
+                self.topic = f"{self.topic} {j['topic_update']}"
+        except Exception as e:
+            print(f"[LLM FEEDBACK ERROR] {self.name}: {e}")
+
+# -------------------------
+# WRITER AGENT
+# -------------------------
+class WriterAgent:
+    def __init__(self, name: str, llm: LLM):
+        self.name = name
+        self.llm = llm
+        self.agent = Agent(
+            role="Writer",
+            goal="Evaluate papers from researchers and negotiate using structured intents.",
+            backstory="Technical writer that only speaks in short intent messages.",
+            llm=llm,
+        )
+        self.accepted_papers = []
+        self.conversation_log = []
+
+    def judge_paper(self, paper: ResearchPaper):
+        """Writer judges paper and returns intent message"""
+        try:
+            year = int(paper.year)
+        except:
+            year = 0
+        if year < MIN_ACCEPT_YEAR_DEFAULT:
+            return {
+                "sender": "writer",
+                "message": f"you send me an old paper, the year should be greater then {MIN_ACCEPT_YEAR_DEFAULT}"
+            }, False
+        else:
+            return {
+                "sender": "writer",
+                "message": f"paper accepted, good paper with year {paper.year}"
+            }, True
+
+    def synthesize_summary(self):
+        """Writer uses LLM to summarize all accepted papers"""
+        if not self.accepted_papers:
+            return "No papers were accepted."
+        abstracts = "\n\n".join([f"- {p.title} ({p.year}): {p.abstract}" for p in self.accepted_papers])
+        prompt = (
+            "You are a scientific writer. Summarize the following paper abstracts into one coherent paragraph:\n"
+            f"{abstracts}\n\nFinal Summary:"
+        )
+        try:
+            return self.llm.call(prompt)
+        except Exception as e:
+            return f"[SYNTHESIS ERROR] {e}"
+
+# -------------------------
+# CREW
+# -------------------------
+class ResearchCrew:
+    def __init__(self, researchers, writer: WriterAgent):
+        self.researchers = researchers
+        self.writer = writer
+
+    def run_negotiation(self, max_rounds_per_researcher: int = MAX_NEGOTIATION_ROUNDS):
+        for researcher in self.researchers:
+            print(f"\n--- Negotiation with {researcher.name} (topic: {researcher.topic}) ---")
+            accepted, rounds = False, 0
+
+            while not accepted and rounds < max_rounds_per_researcher:
+                rounds += 1
+                paper = researcher.provide_paper()
+                print(f"{researcher.name}: Proposed {paper.title} ({paper.year})")
+
+                intent, accepted = self.writer.judge_paper(paper)
+                self.writer.conversation_log.append(intent)
+                print(f"{intent['sender']}: {intent['message']}")
+
+                # ✅ Append accepted papers immediately
+                if accepted:
+                    self.writer.accepted_papers.append(paper)
+                    break  # move to next researcher
+
+                # If rejected, update researcher constraints and try again
+                researcher.receive_feedback(intent)
+
+                # Fetch a new paper respecting updated min_year
+                paper = researcher.provide_paper()
+                reply = {
+                    "sender": researcher.name.lower(),
+                    "message": f"recent paper found with year {paper.year}"
+                }
+                self.writer.conversation_log.append(reply)
+                print(f"{reply['sender']}: {reply['message']}")
+
+                # Judge new paper
+                intent, accepted = self.writer.judge_paper(paper)
+                self.writer.conversation_log.append(intent)
+                print(f"{intent['sender']}: {intent['message']}")
+                if accepted:
+                    self.writer.accepted_papers.append(paper)
+                    break
+
+            # Fallback: if max rounds reached and no paper accepted yet
+            if not accepted and researcher.papers:
+                last = researcher.papers[-1]
+                self.writer.accepted_papers.append(last)
+                print(f"Writer: Max rounds reached. Accepting last proposed paper: {last.title}")
+
+        # Save negotiation log
+        with open("negotiation_log.txt", "w", encoding="utf-8") as f:
+            for line in self.writer.conversation_log:
+                f.write(json.dumps(line) + "\n")
+            f.write("\n=== Final Accepted Papers ===\n")
+            for p in self.writer.accepted_papers:
+                f.write(str(p) + "\n")
+
+        # Final synthesis
+        synthesis = self.writer.synthesize_summary()
+        with open("final_synthesis.txt", "w", encoding="utf-8") as f:
+            f.write(synthesis)
+
+        return self.writer.accepted_papers, synthesis
+
+
+# -------------------------
+# MAIN
+# -------------------------
+if __name__ == "__main__":
+    r1 = ResearcherAgent("Researcher 1", "Machine Learning for stream data rate prediction", llm)
+    r2 = ResearcherAgent("Researcher 2", "Adaptive and proactive stream application scheduling and offloading using machine learning and LLM", llm)
+
+    writer = WriterAgent("Writer", llm)
+    crew = ResearchCrew([r1, r2], writer)
+
+    accepted, synthesis = crew.run_negotiation(max_rounds_per_researcher=3)
+
+    print("\n=== Negotiation Finished ===\nFinal accepted papers:")
+    for i, p in enumerate(accepted, start=1):
+        print(f"{i}. {p.title} ({p.year}) - Keywords: {p.keywords}")
+
+    print("\n=== Final Synthesis ===")
+    print(synthesis)
