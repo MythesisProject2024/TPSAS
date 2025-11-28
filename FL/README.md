@@ -1,7 +1,6 @@
-# Federated Linear Regression Project
-# ****** Paper: Federated Learning–Driven Trustful and Privacy-Preserving Service Composition in VirtualHospitals ****** 
+# Fl_trust_composition
 
-This project is an update of the FL\_skeleton adapted to a regression task.
+This project is an update of the FL\_Fl_trust_composition adapted to a regression task.
 The target is a continuous TrustIndex (float). Models are simple linear
 regression (MSE loss) implemented with NumPy for easy running.
 
