@@ -59,7 +59,7 @@ df = pd.DataFrame({
 })
 
 # Save to CSV
-df.to_csv("synthetic_trust_dataset.csv", index=False)
+df.to_csv("./data/synthetic_trust_dataset.csv", index=False)
 
 print("Synthetic dataset created with 20 services (1000 samples each) and saved as synthetic_trust_dataset.csv")
 print(df.head())
