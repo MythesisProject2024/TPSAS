@@ -1,4 +1,5 @@
-# FL\_linear\_skeleton: Federated Linear Regression Project
+# Federated Linear Regression Project
+# ****** Paper: Federated Learning–Driven Trustful and Privacy-Preserving Service Composition in VirtualHospitals ****** 
 
 This project is an update of the FL\_skeleton adapted to a regression task.
 The target is a continuous TrustIndex (float). Models are simple linear
