@@ -1,8 +1,10 @@
-# Fl_trust_composition
+# Fl_trust_composition project : ##cleaned_project.zip##
 
 This project is an update of the FL\_Fl_trust_composition adapted to a regression task.
 The target is a continuous TrustIndex (float). Models are simple linear
 regression (MSE loss) implemented with NumPy for easy running.
+You can download the hole project in zipped form titled: 
+
 
 Key files:
 
@@ -42,10 +44,7 @@ RUN python files in this order:
 * train\_federated.py	#training aggregated model
 
 * test.py   		# evaluates saved aggregated model
-
-
-
-
+  
 
 3\. Client Data set with outliers (feature reponse time (RT)): sizes 1000, 5000, 12500, 20000, 37500:
 
@@ -64,6 +63,10 @@ RUN python files in this order:
 RUN python file : 
 
 * scenario3\_7.py
+
+
+5)To download the hole project :
+  download : ##cleaned_project.zip##
 
 &nbsp;
 
