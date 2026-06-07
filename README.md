@@ -1,7 +1,7 @@
 # TPSAS
 
 ## Description
-This repository contains the Python code for experimentation of the proposed TPSAS approach of our paper, which has been submitted to a conference and is currently under review.
+This repository contains the Python code for experimentation of the proposed TPSAS approach of our paper "LSTM-Based Proactive Scheduling of Stream Applications in Edge/Cloud Environments", which has been submitted to a conference and is currently under review.
 
 ## Getting Started
 - This python project includes python scripts, task dataset and VM dataset. 
@@ -42,3 +42,13 @@ Download the required Python libraries and components:
 ## Output and Results
 
 After running the program, the results are saved in an Excel files named `GSA_results.xls` and GA_results.xls.
+
+## For use please cite: 
+@inproceedings{lajili2025lstm,
+  title={LSTM-Based Proactive Scheduling of Stream Applications in Edge/Cloud Environments},
+  author={Lajili, Sabeur and Brahmi, Zaki and Omri, Mohamed Nazih},
+  booktitle={International Conference on Industrial, Engineering and Other Applications of Applied Intelligent Systems},
+  pages={258--271},
+  year={2025},
+  organization={Springer}
+}
